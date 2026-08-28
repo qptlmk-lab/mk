@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>2026 부산 수학여행 가이드 🌊</title>
+  <!-- Google Fonts & Lucide Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-light: #eff6ff;
+      --primary-dark: #1d4ed8;
+      --accent: #f59e0b;
+      --accent-pink: #ec4899;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #10b981;
+      --danger: #ef4444;
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 14px rgba(0,0,0,0.08);
+      --shadow-lg: 0 10px 25px -5px rgba(37,99,235,0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: #cbd5e1;
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    /* Mobile Container Wrapper */
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 0 40px rgba(0,0,0,0.12);
+      padding-bottom: 84px;
+    }
+
+    /* Hero Banner with Sky Capsule Illustration */
+    .hero-banner {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+    }
+
+    .hero-image-wrap {
+      position: relative;
+      width: 100%;
+      height: 240px;
+      overflow: hidden;
+    }
+
+    .hero-image-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      transition: transform 0.5s ease;
+    }
+
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(15,23,42,0.15) 0%, rgba(15,23,42,0.6) 75%, rgba(15,23,42,0.9) 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 20px;
+      color: white;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.25);
+      backdrop-filter: blur(8px);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      width: fit-content;
+      margin-bottom: 8px;
+      border: 1px solid rgba(255,255,255,0.4);
+    }
+
+    .hero-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      line-height: 1.3;
+      margin-bottom: 4px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .hero-sub {
+      font-size: 13px;
+      opacity: 0.95;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Live Status Card */
+    .status-card {
+      margin: -16px 16px 16px;
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      box-shadow: var(--shadow-md);
+      position: relative;
+      z-index: 10;
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+
+    .status-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--primary);
+      border-radius: 50%;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(37, 99, 235, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+    }
+
+    .current-schedule-info {
+      background: var(--primary-light);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .current-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 2px;
+    }
+
+    .current-desc {
+      font-size: 12px;
+      color: #475569;
+    }
+
+    .sim-toggle {
+      font-size: 11px;
+      color: var(--primary);
+      background: none;
+      border: 1px solid var(--primary);
+      padding: 3px 8px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    /* Content Area & Tabs */
+    .tab-content {
+      display: none;
+      padding: 0 16px 20px;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 16px 0 12px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Timeline Section */
+    .timeline {
+      position: relative;
+      padding-left: 24px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 14px;
+      bottom: 20px;
+      width: 2px;
+      background: #cbd5e1;
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .timeline-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .timeline-dot {
+      position: absolute;
+      left: -24px;
+      top: 14px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid #94a3b8;
+      box-sizing: border-box;
+      z-index: 2;
+    }
+
+    .timeline-item.active .timeline-dot {
+      border-color: var(--primary);
+      background: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+    }
+
+    .timeline-item.completed .timeline-dot {
+      border-color: var(--success);
+      background: var(--success);
+    }
+
+    .timeline-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+
+    .timeline-item.active .timeline-card {
+      border-color: var(--primary);
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.12);
+      background: #f8faff;
+    }
+
+    .timeline-time-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary);
+      background: var(--primary-light);
+      padding: 2px 8px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+    }
+
+    .timeline-duration {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-left: 6px;
+      font-weight: 500;
+    }
+
+    .timeline-event-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .timeline-detail {
+      font-size: 13px;
+      color: #475569;
+      line-height: 1.4;
+    }
+
+    .timeline-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .tag {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #f1f5f9;
+      color: #475569;
+      font-weight: 500;
+    }
+
+    .tag.highlight {
+      background: #fef3c7;
+      color: #b45309;
+      font-weight: 600;
+    }
+
+    /* Place Cards & Images */
+    .place-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: 18px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+      transition: transform 0.2s ease;
+    }
+
+    .place-image-wrap {
+      position: relative;
+      width: 100%;
+      height: 180px;
+      background: #e2e8f0;
+      overflow: hidden;
+    }
+
+    .place-image-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .place-image-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(4px);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .place-body {
+      padding: 16px;
+    }
+
+    .place-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .place-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .place-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .place-desc {
+      font-size: 13px;
+      color: #475569;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    .place-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-map {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+
+    .btn-kakao {
+      background: #FEE500;
+      color: #191919;
+    }
+
+    .btn-naver {
+      background: #03C75A;
+      color: white;
+    }
+
+    /* Missions & Checklist */
+    .mission-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .mission-card.checked {
+      background: #f0fdf4;
+      border-color: #86efac;
+    }
+
+    .mission-checkbox {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      border: 2px solid #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .mission-card.checked .mission-checkbox {
+      background: var(--success);
+      border-color: var(--success);
+    }
+
+    .mission-info {
+      flex: 1;
+    }
+
+    .mission-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 2px;
+    }
+
+    .mission-card.checked .mission-title {
+      text-decoration: line-through;
+      color: #64748b;
+    }
+
+    .mission-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .progress-box {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+    }
+
+    .progress-bar-bg {
+      height: 10px;
+      background: #e2e8f0;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #10b981);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* Emergency Contacts */
+    .sos-banner {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: white;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .contact-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .contact-info h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .contact-info p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .btn-call {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--primary);
+      color: white;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    /* Bottom Navigation Bar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      height: 68px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 100;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      color: #64748b;
+      background: none;
+      border: none;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 12px;
+      transition: all 0.2s;
+    }
+
+    .nav-item.active {
+      color: var(--primary);
+    }
+
+    .nav-item.active i, .nav-item.active svg {
+      stroke: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    /* Notice Box */
+    .notice-box {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 10px;
+      font-size: 13px;
+      color: #92400e;
+      line-height: 1.4;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 200;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+    }
+
+    .gps-box {
+      background: #f1f5f9;
+      padding: 12px;
+      border-radius: 8px;
+      margin: 12px 0;
+      font-family: monospace;
+      font-size: 13px;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- Hero Section with Sky Capsule Illustration -->
+  <header class="hero-banner">
+    <div class="hero-image-wrap">
+      <img src="./sky_capsule.jpg" alt="해운대 스카이캡슐 일러스트" />
+      <div class="hero-overlay">
+        <div class="hero-badge">
+          <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i>
+          <span>2026학년도 가을 수학여행</span>
+        </div>
+        <h1 class="hero-title">낭만 가득 부산 여행 🌊</h1>
+        <div class="hero-sub">
+          <i data-lucide="calendar" style="width: 14px; height: 14px;"></i>
+          <span>2026년 10월 8일 (목) · 당일 코스</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Live Status Card -->
+  <div class="status-card">
+    <div class="status-header">
+      <div class="status-indicator">
+        <div class="pulse-dot"></div>
+        <span id="current-status-badge">실시간 일정 상태</span>
+      </div>
+      <button class="sim-toggle" onclick="cycleDemoTime()">🕒 일정 넘겨보기</button>
+    </div>
+    <div class="current-schedule-info">
+      <div>
+        <div class="current-title" id="current-title">스카이캡슐열차 탑승</div>
+        <div class="current-desc" id="current-desc">진행 중인 일정 (09:00 ~ 10:30)</div>
+      </div>
+      <div style="text-align: right;">
+        <span style="font-size: 11px; color: var(--text-muted); display: block;">시뮬레이션</span>
+        <strong style="font-size: 14px; color: var(--primary);" id="live-clock">09:00</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 1: 타임라인 (Timeline) -->
+  <section id="tab-timeline" class="tab-content active">
+    <div class="section-heading">
+      <h2 class="section-title">
+        <i data-lucide="clock" style="width: 18px; height: 18px; color: var(--primary);"></i>
+        전체 상세 타임라인
+      </h2>
+      <span style="font-size: 12px; color: var(--text-muted);">총 11개 코스</span>
+    </div>
+
+    <div class="notice-box">
+      <i data-lucide="info" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
+      <div>출발 시간이 <b>08:00</b>로 변경되었습니다. 10분 전까지 버스에 탑승해 주세요!</div>
+    </div>
+
+    <div class="timeline" id="timeline-list">
+      <!-- Generated dynamically by JS -->
+    </div>
+  </section>
+
+  <!-- TAB 2: 장소 안내 및 지도 (Places with Photos) -->
+  <section id="tab-places" class="tab-content">
+    <div class="section-heading">
+      <h2 class="section-title">
+        <i data-lucide="map-pin" style="width: 18px; height: 18px; color: var(--primary);"></i>
+        주요 방문 장소 안내
+      </h2>
+      <span style="font-size: 12px; color: var(--text-muted);">5대 명소</span>
+    </div>
+
+    <!-- Place 1: Sky Capsule -->
+    <div class="place-card">
+      <div class="place-image-wrap">
+        <img src="./sky_capsule.jpg" alt="해운대 블루라인파크 스카이캡슐" />
+        <div class="place-image-badge">
+          <i data-lucide="camera" style="width: 12px; height: 12px;"></i>
+          <span>1코스 · 해변열차</span>
+        </div>
+      </div>
+      <div class="place-body">
+        <div class="place-header">
+          <h3 class="place-title">1. 스카이캡슐 미포정거장</h3>
+          <span class="place-badge">09:00 ~ 10:30</span>
+        </div>
+        <p class="place-desc">해운대 바다 절경을 7~10m 공중에서 감상하는 알록달록 4인승 프라이빗 캡슐 열차입니다. (미포 정거장 ➔ 청사포)</p>
+        <div class="place-actions">
+          <a href="https://map.kakao.com/link/search/해운대블루라인파크 미포정거장" target="_blank" class="btn-map btn-kakao">
+            <i data-lucide="map" style="width: 14px; height: 14px;"></i> 카카오맵
+          </a>
+          <a href="https://m.map.naver.com/search2/search.naver?query=해운대블루라인파크 미포정거장" target="_blank" class="btn-map btn-naver">
+            <i data-lucide="navigation" style="width: 14px; height: 14px;"></i> 네이버지도
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Place 2: Cheongsapo -->
+    <div class="place-card">
+      <div class="place-image-wrap">
+        <img src="./cheongsapo.jpg" alt="청사포 다릿돌 전망대 & 등대" />
+        <div class="place-image-badge">
+          <i data-lucide="camera" style="width: 12px; height: 12px;"></i>
+          <span>2코스 · 스카이워크</span>
+        </div>
+      </div>
+      <div class="place-body">
+        <div class="place-header">
+          <h3 class="place-title">2. 청사포 다릿돌 전망대 & 등대</h3>
+          <span class="place-badge">10:30 ~ 11:20</span>
+        </div>
+        <p class="place-desc">바다 위를 걷는 듯한 투명 강화유리 스카이워크와 쌍둥이 등대(빨강/하양)가 있는 대표 포토스팟입니다.</p>
+        <div class="place-actions">
+          <a href="https://map.kakao.com/link/search/청사포 다릿돌전망대" target="_blank" class="btn-map btn-kakao">
+            <i data-lucide="map" style="width: 14px; height: 14px;"></i> 카카오맵
+          </a>
+          <a href="https://m.map.naver.com/search2/search.naver?query=청사포 다릿돌전망대" target="_blank" class="btn-map btn-naver">
+            <i data-lucide="navigation" style="width: 14px; height: 14px;"></i> 네이버지도
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Place 3: Gourmet Square Buffet -->
+    <div class="place-card">
+      <div class="place-image-wrap">
+        <img src="./gourmet_square.jpg" alt="고메스퀘어 해운대점 뷔페" />
+        <div class="place-image-badge">
+          <i data-lucide="utensils" style="width: 12px; height: 12px;"></i>
+          <span>3코스 · 점심 뷔페</span>
+        </div>
+      </div>
+      <div class="place-body">
+        <div class="place-header">
+          <h3 class="place-title">3. 고메스퀘어 해운대점 (중식)</h3>
+          <span class="place-badge">12:00 ~ 13:00</span>
+        </div>
+        <p class="place-desc">다양한 스시, 양식, 분식, 디저트를 마음껏 즐길 수 있는 프리미엄 뷔페 식당입니다.</p>
+        <div class="place-actions">
+          <a href="https://map.kakao.com/link/search/고메스퀘어 해운대점" target="_blank" class="btn-map btn-kakao">
+            <i data-lucide="map" style="width: 14px; height: 14px;"></i> 카카오맵
+          </a>
+          <a href="https://m.map.naver.com/search2/search.naver?query=고메스퀘어 해운대점" target="_blank" class="btn-map btn-naver">
+            <i data-lucide="navigation" style="width: 14px; height: 14px;"></i> 네이버지도
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Place 4: Songdo Cable Car -->
+    <div class="place-card">
+      <div class="place-image-wrap">
+        <img src="./songdo_cablecar.jpg" alt="송도해상케이블카" />
+        <div class="place-image-badge">
+          <i data-lucide="camera" style="width: 12px; height: 12px;"></i>
+          <span>4코스 · 해상케이블카</span>
+        </div>
+      </div>
+      <div class="place-body">
+        <div class="place-header">
+          <h3 class="place-title">4. 송도해상케이블카</h3>
+          <span class="place-badge">14:00 ~ 15:20</span>
+        </div>
+        <p class="place-desc">송도해수욕장 송림공원에서 암남공원까지 바다를 가로지르는 국내 최고의 해상 케이블카!</p>
+        <div class="place-actions">
+          <a href="https://map.kakao.com/link/search/송도해상케이블카" target="_blank" class="btn-map btn-kakao">
+            <i data-lucide="map" style="width: 14px; height: 14px;"></i> 카카오맵
+          </a>
+          <a href="https://m.map.naver.com/search2/search.naver?query=송도해상케이블카" target="_blank" class="btn-map btn-naver">
+            <i data-lucide="navigation" style="width: 14px; height: 14px;"></i> 네이버지도
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Place 5: Gamcheon Village -->
+    <div class="place-card">
+      <div class="place-image-wrap">
+        <img src="./gamcheon_village.jpg" alt="감천문화마을 어린왕자" />
+        <div class="place-image-badge">
+          <i data-lucide="camera" style="width: 12px; height: 12px;"></i>
+          <span>5코스 · 문화마을</span>
+        </div>
+      </div>
+      <div class="place-body">
+        <div class="place-header">
+          <h3 class="place-title">5. 감천문화마을</h3>
+          <span class="place-badge">15:40 ~ 17:00</span>
+        </div>
+        <p class="place-desc">한국의 마추픽추! 알록달록 계단식 파스텔톤 가옥과 어린왕자 & 사막여우 조형물이 있는 대표 명소입니다.</p>
+        <div class="place-actions">
+          <a href="https://map.kakao.com/link/search/감천문화마을" target="_blank" class="btn-map btn-kakao">
+            <i data-lucide="map" style="width: 14px; height: 14px;"></i> 카카오맵
+          </a>
+          <a href="https://m.map.naver.com/search2/search.naver?query=감천문화마을" target="_blank" class="btn-map btn-naver">
+            <i data-lucide="navigation" style="width: 14px; height: 14px;"></i> 네이버지도
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 3: 조별 미션 & 스탬프 (Missions) -->
+  <section id="tab-missions" class="tab-content">
+    <div class="section-heading">
+      <h2 class="section-title">
+        <i data-lucide="trophy" style="width: 18px; height: 18px; color: var(--accent);"></i>
+        수학여행 스탬프 & 미션
+      </h2>
+    </div>
+
+    <div class="progress-box">
+      <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700;">
+        <span>미션 달성률</span>
+        <span id="mission-percent" style="color: var(--primary);">0%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-bar"></div>
+      </div>
+    </div>
+
+    <div id="mission-list">
+      <div class="mission-card" onclick="toggleMission(this, 1)">
+        <div class="mission-checkbox"><i data-lucide="check" style="width: 16px; height: 16px;"></i></div>
+        <div class="mission-info">
+          <div class="mission-title">🚠 스카이캡슐 단체 셀카</div>
+          <div class="mission-desc">동승한 친구들과 함께 바다를 배경으로 브이 셀카 찍기</div>
+        </div>
+      </div>
+
+      <div class="mission-card" onclick="toggleMission(this, 2)">
+        <div class="mission-checkbox"><i data-lucide="check" style="width: 16px; height: 16px;"></i></div>
+        <div class="mission-info">
+          <div class="mission-title">🗼 청사포 빨간 등대 점프샷</div>
+          <div class="mission-desc">청사포 쌍둥이 등대를 배경으로 신나는 점프샷 남기기</div>
+        </div>
+      </div>
+
+      <div class="mission-card" onclick="toggleMission(this, 3)">
+        <div class="mission-checkbox"><i data-lucide="check" style="width: 16px; height: 16px;"></i></div>
+        <div class="mission-info">
+          <div class="mission-title">🍽️ 점심 식사 깨끗이 비우기</div>
+          <div class="mission-desc">고메스퀘어 뷔페에서 음식 남기지 않고 맛있게 식사하기</div>
+        </div>
+      </div>
+
+      <div class="mission-card" onclick="toggleMission(this, 4)">
+        <div class="mission-checkbox"><i data-lucide="check" style="width: 16px; height: 16px;"></i></div>
+        <div class="mission-info">
+          <div class="mission-title">🚡 송도 케이블카 발밑 인증샷</div>
+          <div class="mission-desc">유리 바닥 아래 푸른 바다와 함께 신발 모아 인증샷</div>
+        </div>
+      </div>
+
+      <div class="mission-card" onclick="toggleMission(this, 5)">
+        <div class="mission-checkbox"><i data-lucide="check" style="width: 16px; height: 16px;"></i></div>
+        <div class="mission-info">
+          <div class="mission-title">🦊 감천마을 어린왕자와 나란히</div>
+          <div class="mission-desc">어린왕자 & 사막여우 조형물 옆에서 감성 뒷모습 사진 남기기</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 4: 준비물 & 안전 (Checklist) -->
+  <section id="tab-checklist" class="tab-content">
+    <div class="section-heading">
+      <h2 class="section-title">
+        <i data-lucide="check-square" style="width: 18px; height: 18px; color: var(--primary);"></i>
+        준비물 체크리스트
+      </h2>
+    </div>
+
+    <div id="item-list">
+      <div class="mission-card" onclick="toggleCheckItem(this)">
+        <div class="mission-checkbox"><i data-lucide="check" style="width: 16px; height: 16px;"></i></div>
+        <div class="mission-info">
+          <div class="mission-title">👟 편안한 운동화 착용</div>
+          <div class="mission-desc">감천문화마을 및 전망대 도보 이동이 많습니다.</div>
+        </div>
+      </div>
+
+      <div class="mission-card" onclick="toggleCheckItem(this)">
+        <div class="mission-checkbox"><i data-lucide="check" style="width: 16px; height: 16px;"></i></div>
+        <div class="mission-info">
+          <div class="mission-title">🔋 스마트폰 보조배터리</div>
+          <div class="mission-desc">사진 촬영 및 길찾기로 배터리 소모가 큽니다.</div>
+        </div>
+      </div>
+
+      <div class="mission-card" onclick="toggleCheckItem(this)">
+        <div class="mission-checkbox"><i data-lucide="check" style="width: 16px; height: 16px;"></i></div>
+        <div class="mission-info">
+          <div class="mission-title">💊 개인 상비약 및 멀미약</div>
+          <div class="mission-desc">버스 멀미가 있는 학생은 출발 30분 전 복용</div>
+        </div>
+      </div>
+
+      <div class="mission-card" onclick="toggleCheckItem(this)">
+        <div class="mission-checkbox"><i data-lucide="check" style="width: 16px; height: 16px;"></i></div>
+        <div class="mission-info">
+          <div class="mission-title">🧥 얇은 겉옷 (바닷바람 대비)</div>
+          <div class="mission-desc">케이블카 및 바닷가 근처는 바람이 불어 쌀쌀할 수 있습니다.</div>
+        </div>
+      </div>
+
+      <div class="mission-card" onclick="toggleCheckItem(this)">
+        <div class="mission-checkbox"><i data-lucide="check" style="width: 16px; height: 16px;"></i></div>
+        <div class="mission-info">
+          <div class="mission-title">💳 개인 용돈 및 학생증</div>
+          <div class="mission-desc">기념품 구매 및 비상시를 대비해 소액 지참</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB 5: 긴급 연락망 & SOS (Emergency) -->
+  <section id="tab-sos" class="tab-content">
+    <div class="section-heading">
+      <h2 class="section-title">
+        <i data-lucide="shield-alert" style="width: 18px; height: 18px; color: var(--danger);"></i>
+        긴급 연락망 & SOS
+      </h2>
+    </div>
+
+    <div class="sos-banner">
+      <div>
+        <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 2px;">🚨 길을 잃었거나 위급한가요?</h3>
+        <p style="font-size: 12px; opacity: 0.9;">내 위치를 즉시 확인하고 선생님께 전송하세요.</p>
+      </div>
+      <button onclick="getMyLocation()" style="background: white; color: var(--danger); border: none; padding: 8px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; flex-shrink: 0;">
+        📍 내 위치 SOS
+      </button>
+    </div>
+
+    <div class="contact-card">
+      <div class="contact-info">
+        <h4>담임 선생님</h4>
+        <p>비상 연락 및 인솔 총괄</p>
+      </div>
+      <a href="tel:010-0000-0000" class="btn-call">
+        <i data-lucide="phone" style="width: 14px; height: 14px;"></i> 전화걸기
+      </a>
+    </div>
+
+    <div class="contact-card">
+      <div class="contact-info">
+        <h4>부담임 선생님 / 인솔교사</h4>
+        <p>안전 지도 및 학생 관리</p>
+      </div>
+      <a href="tel:010-1111-2222" class="btn-call">
+        <i data-lucide="phone" style="width: 14px; height: 14px;"></i> 전화걸기
+      </a>
+    </div>
+
+    <div class="contact-card">
+      <div class="contact-info">
+        <h4>관광버스 기사님 (1호차)</h4>
+        <p>차량 탑승 및 분실물 문의</p>
+      </div>
+      <a href="tel:010-3333-4444" class="btn-call">
+        <i data-lucide="phone" style="width: 14px; height: 14px;"></i> 전화걸기
+      </a>
+    </div>
+
+    <div class="contact-card">
+      <div class="contact-info">
+        <h4>경찰서 (112) / 소방서 (119)</h4>
+        <p>위급 상황 및 응급 구조</p>
+      </div>
+      <a href="tel:119" class="btn-call" style="background: var(--danger);">
+        <i data-lucide="phone-call" style="width: 14px; height: 14px;"></i> 119 신고
+      </a>
+    </div>
+  </section>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <button class="nav-item" onclick="switchTab('timeline', this)">
+      <i data-lucide="calendar" style="width: 20px; height: 20px;"></i>
+      <span>일정표</span>
+    </button>
+    <button class="nav-item active" onclick="switchTab('places', this)">
+      <i data-lucide="map-pin" style="width: 20px; height: 20px;"></i>
+      <span>장소안내</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('missions', this)">
+      <i data-lucide="award" style="width: 20px; height: 20px;"></i>
+      <span>미션스탬프</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('checklist', this)">
+      <i data-lucide="clipboard-check" style="width: 20px; height: 20px;"></i>
+      <span>체크리스트</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('sos', this)">
+      <i data-lucide="phone-call" style="width: 20px; height: 20px;"></i>
+      <span>긴급연락</span>
+    </button>
+  </nav>
+</div>
+
+<!-- Location SOS Modal -->
+<div id="sosModal" class="modal-overlay">
+  <div class="modal-content">
+    <h3 style="font-size: 17px; font-weight: 700; color: var(--text-main); margin-bottom: 8px;">📍 현재 내 위치 전송</h3>
+    <p style="font-size: 13px; color: var(--text-muted);">아래 좌표를 복사하거나 선생님께 문자로 전송하세요.</p>
+    <div class="gps-box" id="gps-coords">위치 정보를 조회 중...</div>
+    <div style="display: flex; gap: 8px; margin-top: 14px;">
+      <button onclick="shareCoords()" style="flex: 1; padding: 10px; border-radius: 8px; background: var(--primary); color: white; border: none; font-weight: 600; cursor: pointer;">
+        문자로 공유
+      </button>
+      <button onclick="closeModal()" style="flex: 1; padding: 10px; border-radius: 8px; background: #e2e8f0; color: #475569; border: none; font-weight: 600; cursor: pointer;">
+        닫기
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 1. Data Definition for Schedule
+  const schedules = [
+    { start: "08:00", end: "09:00", duration: "1시간", title: "학교 출발 ➔ 스카이캡슐 미포탑승장", desc: "버스 탑승 및 인원 점검 후 미포탑승장으로 이동", type: "move", tag: "이동" },
+    { start: "09:00", end: "10:30", duration: "1시간 30분", title: "해운대 스카이캡슐열차 탑승", desc: "미포 정거장에서 청사포까지 알록달록 해변 캡슐열차 탑승", type: "activity", tag: "주요체험", highlight: true },
+    { start: "10:30", end: "10:40", duration: "10분", title: "청사포 다릿돌 전망대 도보 이동", desc: "조별 대열을 유지하며 안전하게 해안 데크길 걷기", type: "move", tag: "도보" },
+    { start: "10:40", end: "11:20", duration: "40분", title: "다릿돌 전망대 & 청사포 등대", desc: "바다 위 스카이워크 체험 및 빨간 등대 배경 단체 사진", type: "activity", tag: "관람/포토" },
+    { start: "11:20", end: "12:00", duration: "40분", title: "청사포 ➔ 고메스퀘어 해운대점", desc: "점심 식사를 위해 뷔페 식당으로 이동", type: "move", tag: "이동" },
+    { start: "12:00", end: "13:00", duration: "1시간", title: "점심 식사 (고메스퀘어 해운대점)", desc: "다양한 메뉴의 프리미엄 뷔페 식사 & 휴식", type: "meal", tag: "맛있는 점심 🍽️", highlight: true },
+    { start: "13:00", end: "14:00", duration: "1시간", title: "고메스퀘어 ➔ 송도케이블카 이동", desc: "식사 후 버스로 송도해수욕장으로 이동", type: "move", tag: "이동" },
+    { start: "14:00", end: "15:20", duration: "1시간 20분", title: "송도해상케이블카 탑승 & 스카이파크", desc: "푸른 바다 위를 가로지르는 케이블카 체험 & 암남공원 산책", type: "activity", tag: "주요체험", highlight: true },
+    { start: "15:20", end: "15:40", duration: "20분", title: "송도 ➔ 감천문화마을 이동", desc: "차량 탑승 후 감천문화마을로 이동", type: "move", tag: "이동" },
+    { start: "15:40", end: "17:00", duration: "1시간 20분", title: "감천문화마을 골목 탐방", desc: "어린왕자 포토존, 계단식 마을 골목길 투어 & 기념품", type: "activity", tag: "골목투어" },
+    { start: "17:00", end: "17:30", duration: "30분", title: "감천문화마을 ➔ 학교 도착 및 해산", desc: "학교 도착 후 최종 인원 점검 및 안전 귀가", type: "end", tag: "귀가" }
+  ];
+
+  let currentSimIndex = 1;
+
+  // Render Timeline
+  function renderTimeline() {
+    const container = document.getElementById('timeline-list');
+    container.innerHTML = schedules.map((item, idx) => `
+      <div class="timeline-item ${idx === currentSimIndex ? 'active' : ''}" id="timeline-item-${idx}">
+        <div class="timeline-dot"></div>
+        <div class="timeline-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="timeline-time-badge">
+              <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+              ${item.start} ~ ${item.end}
+            </div>
+            <span class="timeline-duration">${item.duration}</span>
+          </div>
+          <div class="timeline-event-name">
+            ${item.title}
+          </div>
+          <div class="timeline-detail">${item.desc}</div>
+          <div class="timeline-tags">
+            <span class="tag ${item.highlight ? 'highlight' : ''}">${item.tag}</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+    lucide.createIcons();
+    updateLiveStatus(currentSimIndex);
+  }
+
+  // Update Status Card
+  function updateLiveStatus(idx) {
+    const item = schedules[idx];
+    document.getElementById('current-title').innerText = item.title;
+    document.getElementById('current-desc').innerText = `진행 중인 일정 (${item.start} ~ ${item.end})`;
+    document.getElementById('live-clock').innerText = item.start;
+
+    document.querySelectorAll('.timeline-item').forEach((el, i) => {
+      el.classList.toggle('active', i === idx);
+      el.classList.toggle('completed', i < idx);
+    });
+  }
+
+  // Cycle demo time
+  function cycleDemoTime() {
+    currentSimIndex = (currentSimIndex + 1) % schedules.length;
+    updateLiveStatus(currentSimIndex);
+    const target = document.getElementById(`timeline-item-${currentSimIndex}`);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  // Tab Switching
+  function switchTab(tabId, btnElement) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+    document.getElementById(`tab-${tabId}`).classList.add('active');
+    if (btnElement) {
+      btnElement.classList.add('active');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Missions & Checklists
+  function toggleMission(card, id) {
+    card.classList.toggle('checked');
+    updateMissionProgress();
+  }
+
+  function toggleCheckItem(card) {
+    card.classList.toggle('checked');
+  }
+
+  function updateMissionProgress() {
+    const total = document.querySelectorAll('#mission-list .mission-card').length;
+    const checked = document.querySelectorAll('#mission-list .mission-card.checked').length;
+    const percent = Math.round((checked / total) * 100);
+    document.getElementById('mission-percent').innerText = `${percent}%`;
+    document.getElementById('progress-bar').style.width = `${percent}%`;
+  }
+
+  // GPS SOS Modal
+  let currentCoordsText = "";
+  function getMyLocation() {
+    const modal = document.getElementById('sosModal');
+    const coordsDiv = document.getElementById('gps-coords');
+    modal.style.display = 'flex';
+    coordsDiv.innerText = "GPS 위치 수신 중...";
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude.toFixed(6);
+          const lng = pos.coords.longitude.toFixed(6);
+          currentCoordsText = `[수학여행 SOS] 현재 제 위치: 위도 ${lat}, 경도 ${lng} (https://map.kakao.com/link/map/내위치,${lat},${lng})`;
+          coordsDiv.innerText = currentCoordsText;
+        },
+        (err) => {
+          currentCoordsText = "[수학여행 SOS] 부산 해운대/송도/감천 일대에서 인솔교사의 도움이 필요합니다.";
+          coordsDiv.innerText = "GPS 권한이 필요합니다. (부산 송도/해운대 일대)";
+        }
+      );
+    } else {
+      coordsDiv.innerText = "GPS를 지원하지 않는 브라우저입니다.";
+    }
+  }
+
+  function shareCoords() {
+    if (navigator.share) {
+      navigator.share({
+        title: '수학여행 긴급 위치 알림',
+        text: currentCoordsText
+      });
+    } else {
+      navigator.clipboard.writeText(currentCoordsText);
+      alert('위치 정보가 클립보드에 복사되었습니다. 선생님께 문자로 전송하세요!');
+    }
+  }
+
+  function closeModal() {
+    document.getElementById('sosModal').style.display = 'none';
+  }
+
+  // Initialize
+  window.addEventListener('DOMContentLoaded', () => {
+    lucide.createIcons();
+    renderTimeline();
+    updateMissionProgress();
+    // Default open timeline tab
+    switchTab('places', document.querySelectorAll('.nav-item')[1]);
+  });
+</script>
+</body>
+</html>
