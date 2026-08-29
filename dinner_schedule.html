@@ -167,12 +167,12 @@
       <div>
         <label class="text-[11px] font-bold text-slate-500 block mb-1">일정 종류</label>
         <div class="grid grid-cols-3 gap-1.5" id="typeButtons">
-          <button type="button" onclick="setType('집')" class="type-btn p-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 text-center">🏠 집</button>
-          <button type="button" onclick="setType('약속/모임')" class="type-btn p-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 text-center">🍻 약속</button>
-          <button type="button" onclick="setType('회식')" class="type-btn p-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 text-center">👔 회식</button>
-          <button type="button" onclick="setType('야근')" class="type-btn p-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 text-center">💼 야근</button>
-          <button type="button" onclick="setType('운동')" class="type-btn p-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 text-center">🏃 운동</button>
-          <button type="button" onclick="setType('기타')" class="type-btn p-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 text-center">✏️ 직접입력</button>
+          <button type="button" data-type="집" onclick="setType('집')" class="type-btn p-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 text-center transition">🏠 집</button>
+          <button type="button" data-type="약속" onclick="setType('약속')" class="type-btn p-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 text-center transition">🍻 약속</button>
+          <button type="button" data-type="회식" onclick="setType('회식')" class="type-btn p-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 text-center transition">👔 회식</button>
+          <button type="button" data-type="야근" onclick="setType('야근')" class="type-btn p-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 text-center transition">💼 야근</button>
+          <button type="button" data-type="운동" onclick="setType('운동')" class="type-btn p-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 text-center transition">🏃 운동</button>
+          <button type="button" data-type="기타" onclick="setType('기타')" class="type-btn p-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 text-center transition">✏️ 직접입력</button>
         </div>
       </div>
 
@@ -446,15 +446,17 @@
       selectedType = typeName;
       const buttons = document.querySelectorAll('#typeButtons .type-btn');
       buttons.forEach(btn => {
-        if (btn.innerText.includes(typeName)) {
-          btn.className = 'type-btn p-2 rounded-xl border border-indigo-500 bg-indigo-50 text-indigo-700 text-xs font-bold text-center';
+        const btnType = btn.getAttribute('data-type');
+        if (btnType === typeName || (typeName && typeName.startsWith(btnType))) {
+          btn.className = 'type-btn p-2 rounded-xl border-2 border-indigo-500 bg-indigo-50 text-indigo-700 text-xs font-bold text-center transition';
         } else {
-          btn.className = 'type-btn p-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 text-center';
+          btn.className = 'type-btn p-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 text-center transition';
         }
       });
 
       const titleInput = document.getElementById('formTitle');
-      if (!titleInput.value) {
+      // 제목이 비어있거나 기존 유형명과 같으면 새 유형으로 채워줌
+      if (!titleInput.value || ['집', '약속', '회식', '야근', '운동', '기타', '집(일찍 귀가)', '약속/모임'].includes(titleInput.value)) {
         titleInput.value = typeName;
       }
     }
