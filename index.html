@@ -37,34 +37,44 @@
 <body class="text-slate-800 h-screen flex flex-col justify-between p-2.5 sm:p-4 max-w-md mx-auto select-none">
 
   <!-- 1. 상단 컴팩트 헤더 -->
-  <header class="flex items-center justify-between py-1 px-1 shrink-0">
-    <div class="flex items-center gap-1">
-      <button onclick="changeMonth(-1)" class="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center justify-center shadow-xs">
-        <i class="fa-solid fa-chevron-left text-[10px]"></i>
-      </button>
-      <h1 id="currentMonthLabel" class="text-base font-bold text-slate-900 min-w-[100px] text-center tracking-tight">
-        2026년 8월
-      </h1>
-      <button onclick="changeMonth(1)" class="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center justify-center shadow-xs">
-        <i class="fa-solid fa-chevron-right text-[10px]"></i>
-      </button>
-      <button onclick="goToToday()" class="px-2 py-1 bg-indigo-50 border border-indigo-100 text-indigo-600 text-[11px] font-bold rounded-lg ml-0.5">
-        오늘
-      </button>
+  <header class="py-1 px-1 shrink-0 space-y-1">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-1.5">
+        <span class="text-base">🏠</span>
+        <h1 class="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">하연이집 저녁 캘린더</h1>
+      </div>
+
+      <!-- 범례 & 동기화 버튼 -->
+      <div class="flex items-center gap-1.5 text-[11px] font-semibold">
+        <button onclick="manualSync()" id="syncBtn" class="inline-flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-200 transition">
+          <i id="syncIcon" class="fa-solid fa-rotate text-[9px]"></i>
+          <span id="syncText">공유됨</span>
+        </button>
+        <span class="inline-flex items-center gap-0.5 text-rose-600 pl-0.5">
+          <span class="w-2 h-2 rounded-full bg-rose-500"></span>아내
+        </span>
+        <span class="inline-flex items-center gap-0.5 text-blue-600">
+          <span class="w-2 h-2 rounded-full bg-blue-500"></span>남편
+        </span>
+      </div>
     </div>
 
-    <!-- 범례 & 동기화 버튼 -->
-    <div class="flex items-center gap-1.5 text-[11px] font-semibold">
-      <button onclick="manualSync()" id="syncBtn" class="inline-flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded-full border border-emerald-200 transition">
-        <i id="syncIcon" class="fa-solid fa-rotate text-[9px]"></i>
-        <span id="syncText">공유됨</span>
+    <!-- 월 이동 바 -->
+    <div class="flex items-center justify-between bg-white rounded-xl px-2 py-1 border border-slate-100 shadow-xs">
+      <button onclick="changeMonth(-1)" class="w-6 h-6 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition">
+        <i class="fa-solid fa-chevron-left text-[10px]"></i>
       </button>
-      <span class="inline-flex items-center gap-0.5 text-rose-600 pl-1">
-        <span class="w-2 h-2 rounded-full bg-rose-500"></span>아내
+      <span id="currentMonthLabel" class="text-xs sm:text-sm font-bold text-slate-900 tracking-tight">
+        2026년 8월
       </span>
-      <span class="inline-flex items-center gap-0.5 text-blue-600">
-        <span class="w-2 h-2 rounded-full bg-blue-500"></span>남편
-      </span>
+      <div class="flex items-center gap-1">
+        <button onclick="changeMonth(1)" class="w-6 h-6 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition">
+          <i class="fa-solid fa-chevron-right text-[10px]"></i>
+        </button>
+        <button onclick="goToToday()" class="px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-600 text-[10px] font-bold rounded-lg ml-0.5">
+          오늘
+        </button>
+      </div>
     </div>
   </header>
 
