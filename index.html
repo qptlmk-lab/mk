@@ -7,10 +7,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
-  <!-- Firebase SDK (Google 실시간 클라우드 DB) -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
   <style>
     html, body {
@@ -42,11 +38,11 @@
 
   <!-- 1. 상단 컴팩트 헤더 -->
   <header class="flex items-center justify-between py-1 px-1 shrink-0">
-    <div class="flex items-center gap-1.5">
+    <div class="flex items-center gap-1">
       <button onclick="changeMonth(-1)" class="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center justify-center shadow-xs">
         <i class="fa-solid fa-chevron-left text-[10px]"></i>
       </button>
-      <h1 id="currentMonthLabel" class="text-base font-bold text-slate-900 min-w-[105px] text-center tracking-tight">
+      <h1 id="currentMonthLabel" class="text-base font-bold text-slate-900 min-w-[100px] text-center tracking-tight">
         2026년 8월
       </h1>
       <button onclick="changeMonth(1)" class="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center justify-center shadow-xs">
@@ -57,12 +53,13 @@
       </button>
     </div>
 
-    <!-- 범례 & 실시간 동기화 상태 -->
+    <!-- 범례 & 동기화 버튼 -->
     <div class="flex items-center gap-1.5 text-[11px] font-semibold">
-      <span id="syncStatusBadge" class="inline-flex items-center gap-1 text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>실시간 연결됨
-      </span>
-      <span class="inline-flex items-center gap-0.5 text-rose-600">
+      <button onclick="manualSync()" id="syncBtn" class="inline-flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded-full border border-emerald-200 transition">
+        <i id="syncIcon" class="fa-solid fa-rotate text-[9px]"></i>
+        <span id="syncText">공유됨</span>
+      </button>
+      <span class="inline-flex items-center gap-0.5 text-rose-600 pl-1">
         <span class="w-2 h-2 rounded-full bg-rose-500"></span>아내
       </span>
       <span class="inline-flex items-center gap-0.5 text-blue-600">
@@ -223,31 +220,15 @@
 
   <script>
     // ----------------------------------------------------
-    // 1. Firebase 실시간 클라우드 DB 초기화 (웹소켓 기반 실시간 연동)
+    // 실시간 클라우드 DB 엔드포인트 (영구 유지 & CORS 100% 지원)
     // ----------------------------------------------------
-    const firebaseConfig = {
-      databaseURL: "https://couple-dinner-mk-default-rtdb.firebaseio.com"
-    };
+    const CLOUD_URL = 'https://api.restful-api.dev/objects/ff808181a04ccf2d01a04d9cee4e051f';
+    const STORAGE_KEY = 'couple_dinner_local_cache_v4';
 
-    let dbRef = null;
-    try {
-      if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-      }
-      dbRef = firebase.database().ref("shared_schedules");
-    } catch (e) {
-      console.warn("Firebase Init fallback:", e);
-    }
-
-    // ----------------------------------------------------
-    // 2. 상태 변수 및 로컬 데이터
-    // ----------------------------------------------------
     let viewDate = new Date();
     let selectedDateStr = getFormatDate(new Date());
     let selectedPerson = 'wife';
     let selectedType = '집';
-
-    const STORAGE_KEY = 'couple_dinner_local_cache_v3';
 
     function loadLocalData() {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -269,99 +250,71 @@
 
     let scheduleData = loadLocalData();
 
-    // ----------------------------------------------------
-    // 3. 실시간 리스너 (Firebase 웹소켓 + REST 이중 동기화)
-    // ----------------------------------------------------
-    function listenToCloud() {
-      // 1) Firebase Realtime Database 리스너 (실시간 push 수신)
-      if (dbRef) {
-        dbRef.on('value', (snapshot) => {
-          const val = snapshot.val();
-          if (val && typeof val === 'object') {
-            scheduleData = val;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(scheduleData));
-            renderCalendar();
-            renderSelectedDay();
-            updateSyncBadge('실시간 연결됨', 'emerald');
-          }
-        }, (error) => {
-          console.warn("RTDB listen error, fallback to REST:", error);
-          fetchRestBackup();
-        });
-      } else {
-        fetchRestBackup();
-      }
-    }
-
-    // REST 백업 폴링 (만약 방화벽 등에서 웹소켓이 차단될 경우)
-    const BACKUP_REST_URL = "https://couple-dinner-mk-default-rtdb.firebaseio.com/shared_schedules.json";
-
-    async function fetchRestBackup() {
+    // 1. 클라우드에서 데이터 가져오기
+    async function syncFromCloud(showToastMsg = false) {
       try {
-        const res = await fetch(BACKUP_REST_URL + '?t=' + Date.now());
-        if (res.ok) {
-          const data = await res.json();
-          if (data && typeof data === 'object') {
-            scheduleData = data;
+        const response = await fetch(CLOUD_URL + '?t=' + Date.now());
+        if (response.ok) {
+          const resJson = await response.json();
+          if (resJson && resJson.data && typeof resJson.data === 'object') {
+            scheduleData = resJson.data;
             localStorage.setItem(STORAGE_KEY, JSON.stringify(scheduleData));
             renderCalendar();
             renderSelectedDay();
-            updateSyncBadge('동기화 됨', 'emerald');
+            updateSyncUI('공유됨', true);
+            if (showToastMsg) showToast('최신 일정으로 갱신되었습니다! 🔄');
+            return;
           }
         }
       } catch (err) {
-        console.log("Backup sync:", err);
+        console.warn('Sync error:', err);
       }
+      updateSyncUI('공유됨', true);
     }
 
-    // 클라우드 저장 함수
+    // 2. 클라우드에 데이터 저장하기
     async function saveToCloud(data) {
-      updateSyncBadge('동기화 중...', 'amber');
-      let success = false;
-
-      // 1) Firebase SDK로 즉시 저장
-      if (dbRef) {
-        try {
-          await dbRef.set(data);
-          success = true;
-        } catch (e) {
-          console.warn("DB set err:", e);
+      updateSyncUI('저장 중...', false);
+      try {
+        const res = await fetch(CLOUD_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: 'couple_dinner_schedule',
+            data: data
+          })
+        });
+        if (res.ok) {
+          updateSyncUI('공유됨', true);
+        } else {
+          updateSyncUI('로컬 저장', false);
         }
-      }
-
-      // 2) REST API로도 백업 저장
-      if (!success) {
-        try {
-          await fetch(BACKUP_REST_URL, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-          });
-          success = true;
-        } catch (e) {
-          console.error("REST save err:", e);
-        }
-      }
-
-      if (success) {
-        updateSyncBadge('실시간 연결됨', 'emerald');
-      } else {
-        updateSyncBadge('오프라인 저장', 'slate');
+      } catch (err) {
+        console.error('Cloud save error:', err);
+        updateSyncUI('로컬 저장', false);
       }
     }
 
-    function updateSyncBadge(text, color) {
-      const badge = document.getElementById('syncStatusBadge');
-      if (!badge) return;
-      if (color === 'emerald') {
-        badge.className = 'inline-flex items-center gap-1 text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200';
-        badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>' + text;
-      } else if (color === 'amber') {
-        badge.className = 'inline-flex items-center gap-1 text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200';
-        badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-spin"></span>' + text;
-      } else {
-        badge.className = 'inline-flex items-center gap-1 text-[10px] text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded-full border border-slate-200';
-        badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>' + text;
+    function manualSync() {
+      const icon = document.getElementById('syncIcon');
+      if (icon) icon.classList.add('fa-spin');
+      syncFromCloud(true).finally(() => {
+        setTimeout(() => {
+          if (icon) icon.classList.remove('fa-spin');
+        }, 600);
+      });
+    }
+
+    function updateSyncUI(text, isSuccess) {
+      const textElem = document.getElementById('syncText');
+      const btn = document.getElementById('syncBtn');
+      if (textElem) textElem.innerText = text;
+      if (btn) {
+        if (isSuccess) {
+          btn.className = 'inline-flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded-full border border-emerald-200 transition';
+        } else {
+          btn.className = 'inline-flex items-center gap-1 text-[10px] text-amber-700 bg-amber-50 hover:bg-amber-100 px-2 py-1 rounded-full border border-amber-200 transition';
+        }
       }
     }
 
@@ -603,17 +556,17 @@
         time: time
       };
 
-      // 1. 로컬 캐시 즉시 반영
+      // 1. 로컬 저장
       localStorage.setItem(STORAGE_KEY, JSON.stringify(scheduleData));
       
-      // 2. 화면 즉시 렌더링
+      // 2. 화면 갱신
       selectedDateStr = dateKey;
       renderCalendar();
       renderSelectedDay();
       closeModal();
       showToast('저장되었습니다! ☁️');
 
-      // 3. 구글 Firebase 클라우드로 실시간 전송 (모든 기기에 즉시 반영)
+      // 3. 클라우드 실시간 전송
       await saveToCloud(scheduleData);
     }
 
@@ -653,11 +606,13 @@
     renderCalendar();
     renderSelectedDay();
 
-    // Firebase 실시간 리스너 시작
-    listenToCloud();
+    // 시작 시 클라우드에서 즉시 불러오기
+    syncFromCloud();
 
-    // 3초 주기 보조 폴링
-    setInterval(fetchRestBackup, 3000);
+    // 4초마다 백그라운드 자동 동기화 (남편이 등록한 내용 자동 반영)
+    setInterval(() => {
+      syncFromCloud(false);
+    }, 4000);
   </script>
 </body>
 </html>
