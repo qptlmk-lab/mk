@@ -7,6 +7,11 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Firebase SDK (Google 실시간 클라우드 DB) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
   <style>
     html, body {
       height: 100%;
@@ -53,9 +58,9 @@
     </div>
 
     <!-- 범례 & 실시간 동기화 상태 -->
-    <div class="flex items-center gap-2 text-[11px] font-semibold">
+    <div class="flex items-center gap-1.5 text-[11px] font-semibold">
       <span id="syncStatusBadge" class="inline-flex items-center gap-1 text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>실시간 동기화
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>실시간 연결됨
       </span>
       <span class="inline-flex items-center gap-0.5 text-rose-600">
         <span class="w-2 h-2 rounded-full bg-rose-500"></span>아내
@@ -217,19 +222,33 @@
   </div>
 
   <script>
+    // ----------------------------------------------------
+    // 1. Firebase 실시간 클라우드 DB 초기화 (웹소켓 기반 실시간 연동)
+    // ----------------------------------------------------
+    const firebaseConfig = {
+      databaseURL: "https://couple-dinner-mk-default-rtdb.firebaseio.com"
+    };
+
+    let dbRef = null;
+    try {
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      dbRef = firebase.database().ref("shared_schedules");
+    } catch (e) {
+      console.warn("Firebase Init fallback:", e);
+    }
+
+    // ----------------------------------------------------
+    // 2. 상태 변수 및 로컬 데이터
+    // ----------------------------------------------------
     let viewDate = new Date();
     let selectedDateStr = getFormatDate(new Date());
     let selectedPerson = 'wife';
     let selectedType = '집';
 
-    const STORAGE_KEY = 'couple_dinner_compact_calendar_data';
-    
-    // 부부 전용 클라우드 동기화 엔드포인트 (무료 실시간 클라우드 KV API)
-    const CLOUD_API_URL = 'https://api.jsonstorage.net/v1/json/8a8b1c4e-dinner-couple-mk-schedule';
-    // 대체용 공개 Key-Value 클라우드 엔드포인트
-    const CLOUD_KV_URL = 'https://kvdb.io/4tW3u9Pz2BqK7Y7R5XqMna/couple_dinner_schedule';
+    const STORAGE_KEY = 'couple_dinner_local_cache_v3';
 
-    // 로컬 스토리지 데이터 로드
     function loadLocalData() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
@@ -250,39 +269,84 @@
 
     let scheduleData = loadLocalData();
 
-    // 1. 클라우드에서 최신 데이터 가져오기 (실시간 동기화)
-    async function syncFromCloud() {
-      try {
-        const response = await fetch(CLOUD_KV_URL, { cache: 'no-store' });
-        if (response.ok) {
-          const cloudData = await response.json();
-          if (cloudData && typeof cloudData === 'object' && Object.keys(cloudData).length > 0) {
-            scheduleData = cloudData;
+    // ----------------------------------------------------
+    // 3. 실시간 리스너 (Firebase 웹소켓 + REST 이중 동기화)
+    // ----------------------------------------------------
+    function listenToCloud() {
+      // 1) Firebase Realtime Database 리스너 (실시간 push 수신)
+      if (dbRef) {
+        dbRef.on('value', (snapshot) => {
+          const val = snapshot.val();
+          if (val && typeof val === 'object') {
+            scheduleData = val;
             localStorage.setItem(STORAGE_KEY, JSON.stringify(scheduleData));
             renderCalendar();
             renderSelectedDay();
-            updateSyncBadge('실시간 동기화 됨', 'emerald');
-            return;
+            updateSyncBadge('실시간 연결됨', 'emerald');
           }
-        }
-      } catch (err) {
-        console.log('Cloud sync check:', err);
+        }, (error) => {
+          console.warn("RTDB listen error, fallback to REST:", error);
+          fetchRestBackup();
+        });
+      } else {
+        fetchRestBackup();
       }
     }
 
-    // 2. 클라우드에 데이터 저장하기 (컴퓨터 ↔ 스마트폰 즉시 공유)
-    async function syncToCloud(data) {
-      updateSyncBadge('동기화 중...', 'amber');
+    // REST 백업 폴링 (만약 방화벽 등에서 웹소켓이 차단될 경우)
+    const BACKUP_REST_URL = "https://couple-dinner-mk-default-rtdb.firebaseio.com/shared_schedules.json";
+
+    async function fetchRestBackup() {
       try {
-        await fetch(CLOUD_KV_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-        updateSyncBadge('실시간 동기화', 'emerald');
+        const res = await fetch(BACKUP_REST_URL + '?t=' + Date.now());
+        if (res.ok) {
+          const data = await res.json();
+          if (data && typeof data === 'object') {
+            scheduleData = data;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(scheduleData));
+            renderCalendar();
+            renderSelectedDay();
+            updateSyncBadge('동기화 됨', 'emerald');
+          }
+        }
       } catch (err) {
-        console.error('Cloud save error:', err);
-        updateSyncBadge('로컬 저장됨', 'slate');
+        console.log("Backup sync:", err);
+      }
+    }
+
+    // 클라우드 저장 함수
+    async function saveToCloud(data) {
+      updateSyncBadge('동기화 중...', 'amber');
+      let success = false;
+
+      // 1) Firebase SDK로 즉시 저장
+      if (dbRef) {
+        try {
+          await dbRef.set(data);
+          success = true;
+        } catch (e) {
+          console.warn("DB set err:", e);
+        }
+      }
+
+      // 2) REST API로도 백업 저장
+      if (!success) {
+        try {
+          await fetch(BACKUP_REST_URL, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          success = true;
+        } catch (e) {
+          console.error("REST save err:", e);
+        }
+      }
+
+      if (success) {
+        updateSyncBadge('실시간 연결됨', 'emerald');
+      } else {
+        updateSyncBadge('오프라인 저장', 'slate');
       }
     }
 
@@ -539,18 +603,18 @@
         time: time
       };
 
-      // 1. 로컬 저장
+      // 1. 로컬 캐시 즉시 반영
       localStorage.setItem(STORAGE_KEY, JSON.stringify(scheduleData));
       
-      // 2. 화면 갱신
+      // 2. 화면 즉시 렌더링
       selectedDateStr = dateKey;
       renderCalendar();
       renderSelectedDay();
       closeModal();
       showToast('저장되었습니다! ☁️');
 
-      // 3. 클라우드 실시간 동기화 (스마트폰 & 남편 폰에 즉시 반영)
-      await syncToCloud(scheduleData);
+      // 3. 구글 Firebase 클라우드로 실시간 전송 (모든 기기에 즉시 반영)
+      await saveToCloud(scheduleData);
     }
 
     async function deleteSchedule() {
@@ -568,8 +632,8 @@
       closeModal();
       showToast('삭제되었습니다.');
 
-      // 클라우드 동기화
-      await syncToCloud(scheduleData);
+      // 클라우드 저장
+      await saveToCloud(scheduleData);
     }
 
     function showToast(msg) {
@@ -583,13 +647,17 @@
       }, 1800);
     }
 
-    // 초기 실행: 렌더링 후 즉시 클라우드 동기화
+    // ----------------------------------------------------
+    // 초기 실행
+    // ----------------------------------------------------
     renderCalendar();
     renderSelectedDay();
-    syncFromCloud();
 
-    // 5초마다 자동으로 백그라운드 실시간 동기화 (남편이 수정한 내용 자동 반영)
-    setInterval(syncFromCloud, 5000);
+    // Firebase 실시간 리스너 시작
+    listenToCloud();
+
+    // 3초 주기 보조 폴링
+    setInterval(fetchRestBackup, 3000);
   </script>
 </body>
 </html>
