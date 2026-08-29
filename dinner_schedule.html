@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>우리 둘의 저녁 캘린더 📅</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden; /* 한 화면 고정 */
+    }
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      background-color: #F8FAFC;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .cal-cell {
+      min-height: 0;
+      transition: background-color 0.1s ease;
+    }
+    .badge-wife {
+      background-color: #FFE4E6;
+      color: #E11D48;
+    }
+    .badge-husband {
+      background-color: #DBEAFE;
+      color: #1D4ED8;
+    }
+  </style>
+</head>
+<body class="text-slate-800 h-screen flex flex-col justify-between p-2.5 sm:p-4 max-w-md mx-auto select-none">
+
+  <!-- 1. 상단 컴팩트 헤더 -->
+  <header class="flex items-center justify-between py-1 px-1 shrink-0">
+    <div class="flex items-center gap-1.5">
+      <button onclick="changeMonth(-1)" class="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center justify-center shadow-xs">
+        <i class="fa-solid fa-chevron-left text-[10px]"></i>
+      </button>
+      <h1 id="currentMonthLabel" class="text-base font-bold text-slate-900 min-w-[105px] text-center tracking-tight">
+        2026년 8월
+      </h1>
+      <button onclick="changeMonth(1)" class="w-7 h-7 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center justify-center shadow-xs">
+        <i class="fa-solid fa-chevron-right text-[10px]"></i>
+      </button>
+      <button onclick="goToToday()" class="px-2 py-1 bg-indigo-50 border border-indigo-100 text-indigo-600 text-[11px] font-bold rounded-lg ml-0.5">
+        오늘
+      </button>
+    </div>
+
+    <!-- 범례 -->
+    <div class="flex items-center gap-2 text-[11px] font-semibold">
+      <span class="inline-flex items-center gap-1 text-rose-600">
+        <span class="w-2 h-2 rounded-full bg-rose-500"></span>아내
+      </span>
+      <span class="inline-flex items-center gap-1 text-blue-600">
+        <span class="w-2 h-2 rounded-full bg-blue-500"></span>남편
+      </span>
+    </div>
+  </header>
+
+  <!-- 2. 캘린더 메인 영역 (남는 높이 전체 차지) -->
+  <div class="bg-white rounded-2xl p-2.5 shadow-sm border border-slate-100 flex flex-col flex-1 my-1.5 min-h-0">
+    
+    <!-- 요일 헤더 -->
+    <div class="grid grid-cols-7 text-center text-[11px] font-bold pb-1.5 border-b border-slate-100 shrink-0">
+      <span class="text-rose-500">일</span>
+      <span class="text-slate-500">월</span>
+      <span class="text-slate-500">화</span>
+      <span class="text-slate-500">수</span>
+      <span class="text-slate-500">목</span>
+      <span class="text-slate-500">금</span>
+      <span class="text-blue-500">토</span>
+    </div>
+
+    <!-- 날짜 5~6주 격자 (flex-1로 한 화면에 균등 분할) -->
+    <div id="calendarGrid" class="grid grid-cols-7 flex-1 gap-1 pt-1 min-h-0">
+      <!-- JS 동적 렌더링 -->
+    </div>
+  </div>
+
+  <!-- 3. 하단 선택 날짜 저녁 일정 슬림 카드 (한 화면에 쏙) -->
+  <div class="bg-white rounded-2xl p-3 shadow-sm border border-slate-100 shrink-0 space-y-2">
+    
+    <!-- 날짜 및 안내 -->
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-1.5">
+        <i class="fa-regular fa-calendar-check text-indigo-500 text-xs"></i>
+        <h2 id="selectedDateTitle" class="font-bold text-xs sm:text-sm text-slate-900">8월 29일 (토) 저녁</h2>
+      </div>
+      <span class="text-[10px] text-slate-400">카드를 누르면 수정됩니다</span>
+    </div>
+
+    <!-- 2열 슬림 카드 -->
+    <div class="grid grid-cols-2 gap-2">
+      
+      <!-- 아내 요약 버튼/카드 -->
+      <div onclick="openEditFor('wife')" class="p-2.5 rounded-xl border border-rose-100 bg-rose-50/50 hover:bg-rose-50 cursor-pointer transition flex flex-col justify-between min-h-[58px]">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-bold text-rose-700 flex items-center gap-1">
+            <span>👩</span> 아내
+          </span>
+          <span id="wifeCardBadge" class="text-[10px] font-semibold text-rose-600 bg-white px-1.5 py-0.2 rounded border border-rose-200">
+            집
+          </span>
+        </div>
+        <div class="mt-1">
+          <p id="wifeCardTitle" class="text-xs font-semibold text-slate-800 truncate">집(일찍 귀가)</p>
+          <p id="wifeCardTime" class="text-[10px] text-slate-500 truncate">19:00</p>
+        </div>
+      </div>
+
+      <!-- 남편 요약 버튼/카드 -->
+      <div onclick="openEditFor('husband')" class="p-2.5 rounded-xl border border-blue-100 bg-blue-50/50 hover:bg-blue-50 cursor-pointer transition flex flex-col justify-between min-h-[58px]">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-bold text-blue-700 flex items-center gap-1">
+            <span>👨</span> 남편
+          </span>
+          <span id="husbandCardBadge" class="text-[10px] font-semibold text-blue-600 bg-white px-1.5 py-0.2 rounded border border-blue-200">
+            약속
+          </span>
+        </div>
+        <div class="mt-1">
+          <p id="husbandCardTitle" class="text-xs font-semibold text-slate-800 truncate">동기 모임</p>
+          <p id="husbandCardTime" class="text-[10px] text-slate-500 truncate">20:00</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 일정 등록/수정 모달 바텀시트 -->
+  <div id="scheduleModal" class="fixed inset-0 bg-black/40 backdrop-blur-xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-2xl max-h-[85vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between pb-1.5 border-b border-slate-100">
+        <h3 id="modalTitle" class="font-bold text-sm sm:text-base text-slate-900">저녁 일정 등록</h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i class="fa-solid fa-xmark text-base"></i>
+        </button>
+      </div>
+
+      <!-- 날짜 -->
+      <div>
+        <label class="text-[11px] font-bold text-slate-500 block mb-1">날짜</label>
+        <input type="date" id="formDate" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs sm:text-sm text-slate-800 font-semibold outline-none focus:border-indigo-500">
+      </div>
+
+      <!-- 대상 선택 (아내 / 남편) -->
+      <div>
+        <label class="text-[11px] font-bold text-slate-500 block mb-1">대상</label>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" id="btnSelectWife" onclick="selectPerson('wife')" class="py-2 rounded-xl border-2 border-rose-500 bg-rose-50 text-rose-700 text-xs font-bold flex items-center justify-center gap-1">
+            <span>👩</span> 아내
+          </button>
+          <button type="button" id="btnSelectHusband" onclick="selectPerson('husband')" class="py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-semibold flex items-center justify-center gap-1">
+            <span>👨</span> 남편
+          </button>
+        </div>
+      </div>
+
+      <!-- 저녁 유형 선택 -->
+      <div>
+        <label class="text-[11px] font-bold text-slate-500 block mb-1">일정 종류</label>
+        <div class="grid grid-cols-3 gap-1.5" id="typeButtons">
+          <button type="button" onclick="setType('집')" class="type-btn p-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 text-center">🏠 집</button>
+          <button type="button" onclick="setType('약속/모임')" class="type-btn p-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 text-center">🍻 약속</button>
+          <button type="button" onclick="setType('회식')" class="type-btn p-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 text-center">👔 회식</button>
+          <button type="button" onclick="setType('야근')" class="type-btn p-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 text-center">💼 야근</button>
+          <button type="button" onclick="setType('운동')" class="type-btn p-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 text-center">🏃 운동</button>
+          <button type="button" onclick="setType('기타')" class="type-btn p-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 text-center">✏️ 직접입력</button>
+        </div>
+      </div>
+
+      <!-- 귀가/시작 시간 -->
+      <div>
+        <label class="text-[11px] font-bold text-slate-500 block mb-1">시간 (선택)</label>
+        <div class="flex gap-1 overflow-x-auto pb-1 mb-1 text-[11px]">
+          <button type="button" onclick="setTime('18:30')" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-700">18:30</button>
+          <button type="button" onclick="setTime('19:00')" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-700">19:00</button>
+          <button type="button" onclick="setTime('19:30')" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-700">19:30</button>
+          <button type="button" onclick="setTime('20:00')" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-700">20:00</button>
+          <button type="button" onclick="setTime('21:00 이후')" class="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 rounded text-slate-700">늦음</button>
+        </div>
+        <input type="text" id="formTime" placeholder="예: 19:30" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs sm:text-sm text-slate-800 outline-none focus:border-indigo-500">
+      </div>
+
+      <!-- 메모 -->
+      <div>
+        <label class="text-[11px] font-bold text-slate-500 block mb-1">상세 내용 (선택)</label>
+        <input type="text" id="formTitle" placeholder="예: 청첩장 모임, 헬스장" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs sm:text-sm text-slate-800 outline-none focus:border-indigo-500">
+      </div>
+
+      <!-- 버튼 -->
+      <div class="pt-1 flex gap-2">
+        <button id="btnDeleteSchedule" onclick="deleteSchedule()" type="button" class="hidden w-1/3 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded-xl text-xs sm:text-sm transition">
+          삭제
+        </button>
+        <button onclick="saveSchedule()" type="button" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs sm:text-sm shadow-sm transition">
+          저장하기
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 토스트 알림 -->
+  <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white text-xs px-3.5 py-1.5 rounded-full shadow-lg opacity-0 transition-opacity duration-300 pointer-events-none z-50">
+    저장되었습니다!
+  </div>
+
+  <script>
+    let viewDate = new Date();
+    let selectedDateStr = getFormatDate(new Date());
+    let selectedPerson = 'wife';
+    let selectedType = '집';
+
+    const STORAGE_KEY = 'couple_dinner_compact_calendar';
+
+    function loadData() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      const today = getFormatDate(new Date());
+      return {
+        [today]: {
+          wife: { type: '집', title: '집(일찍 귀가)', time: '19:00' },
+          husband: { type: '약속', title: '동기 모임', time: '20:00' }
+        }
+      };
+    }
+
+    let scheduleData = loadData();
+
+    function getFormatDate(d) {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    function changeMonth(diff) {
+      viewDate.setMonth(viewDate.getMonth() + diff);
+      renderCalendar();
+    }
+
+    function goToToday() {
+      viewDate = new Date();
+      selectedDateStr = getFormatDate(new Date());
+      renderCalendar();
+      renderSelectedDay();
+    }
+
+    // 캘린더 격자 렌더링
+    function renderCalendar() {
+      const year = viewDate.getFullYear();
+      const month = viewDate.getMonth();
+
+      document.getElementById('currentMonthLabel').innerText = `${year}년 ${month + 1}월`;
+
+      const grid = document.getElementById('calendarGrid');
+      grid.innerHTML = '';
+
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+
+      const startDayOfWeek = firstDay.getDay();
+      const totalDays = lastDay.getDate();
+
+      const todayStr = getFormatDate(new Date());
+
+      // 이전 달 빈 칸
+      const prevMonthLastDay = new Date(year, month, 0).getDate();
+      for (let i = startDayOfWeek - 1; i >= 0; i--) {
+        const d = prevMonthLastDay - i;
+        const cell = document.createElement('div');
+        cell.className = 'cal-cell p-0.5 rounded-lg text-slate-300 text-[10px] flex flex-col justify-start items-center opacity-40';
+        cell.innerHTML = `<span>${d}</span>`;
+        grid.appendChild(cell);
+      }
+
+      // 이번 달
+      for (let day = 1; day <= totalDays; day++) {
+        const currentCellDate = new Date(year, month, day);
+        const dateKey = getFormatDate(currentCellDate);
+        const dayOfWeek = currentCellDate.getDay();
+
+        const isToday = dateKey === todayStr;
+        const isSelected = dateKey === selectedDateStr;
+
+        const cell = document.createElement('div');
+        let cellClass = 'cal-cell p-1 rounded-lg border flex flex-col justify-between cursor-pointer overflow-hidden leading-none ';
+
+        if (isSelected) {
+          cellClass += 'bg-indigo-50/90 border-indigo-500 shadow-xs ring-1 ring-indigo-400 ';
+        } else if (isToday) {
+          cellClass += 'bg-amber-50/60 border-amber-300 ';
+        } else {
+          cellClass += 'bg-slate-50/40 border-slate-100 hover:border-slate-300 ';
+        }
+
+        let numColor = 'text-slate-700';
+        if (dayOfWeek === 0) numColor = 'text-rose-500 font-bold';
+        if (dayOfWeek === 6) numColor = 'text-blue-500 font-bold';
+
+        const dayData = scheduleData[dateKey] || {};
+        const wife = dayData.wife;
+        const husband = dayData.husband;
+
+        let badges = '<div class="w-full space-y-0.5 mt-0.5">';
+        
+        if (wife && (wife.title || wife.type)) {
+          const t = (wife.title || wife.type).substring(0, 4);
+          badges += `<div class="badge-wife px-0.5 py-0.2 rounded text-[9px] truncate text-center font-medium">👩${t}</div>`;
+        }
+
+        if (husband && (husband.title || husband.type)) {
+          const t = (husband.title || husband.type).substring(0, 4);
+          badges += `<div class="badge-husband px-0.5 py-0.2 rounded text-[9px] truncate text-center font-medium">👨${t}</div>`;
+        }
+
+        badges += '</div>';
+
+        cell.className = cellClass;
+        cell.innerHTML = `
+          <div class="flex items-center justify-between w-full">
+            <span class="text-[11px] font-bold ${numColor}">${day}</span>
+            ${isToday ? '<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>' : ''}
+          </div>
+          ${badges}
+        `;
+
+        cell.onclick = () => {
+          selectedDateStr = dateKey;
+          renderCalendar();
+          renderSelectedDay();
+        };
+
+        grid.appendChild(cell);
+      }
+
+      // 다음 달 빈 칸
+      const totalRendered = startDayOfWeek + totalDays;
+      const remaining = (7 - (totalRendered % 7)) % 7;
+      for (let i = 1; i <= remaining; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'cal-cell p-0.5 rounded-lg text-slate-300 text-[10px] flex flex-col justify-start items-center opacity-40';
+        cell.innerHTML = `<span>${i}</span>`;
+        grid.appendChild(cell);
+      }
+    }
+
+    // 하단 선택 날짜 상세 갱신
+    function renderSelectedDay() {
+      const parts = selectedDateStr.split('-');
+      const d = new Date(parts[0], parts[1] - 1, parts[2]);
+      const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+      
+      document.getElementById('selectedDateTitle').innerText = `${parseInt(parts[1])}월 ${parseInt(parts[2])}일 (${dayNames[d.getDay()]}) 저녁`;
+
+      const dayData = scheduleData[selectedDateStr] || {};
+      const wife = dayData.wife;
+      const husband = dayData.husband;
+
+      // 아내 카드 갱신
+      document.getElementById('wifeCardBadge').innerText = wife ? (wife.type || '일정') : '미등록';
+      document.getElementById('wifeCardTitle').innerText = wife ? (wife.title || wife.type) : '일정 없음 (터치하여 등록)';
+      document.getElementById('wifeCardTime').innerText = wife ? (wife.time || '시간 미지정') : '';
+
+      // 남편 카드 갱신
+      document.getElementById('husbandCardBadge').innerText = husband ? (husband.type || '일정') : '미등록';
+      document.getElementById('husbandCardTitle').innerText = husband ? (husband.title || husband.type) : '일정 없음 (터치하여 등록)';
+      document.getElementById('husbandCardTime').innerText = husband ? (husband.time || '시간 미지정') : '';
+    }
+
+    function openEditFor(person) {
+      selectPerson(person);
+      openAddModal();
+    }
+
+    function openAddModal() {
+      document.getElementById('formDate').value = selectedDateStr;
+      
+      const dayData = scheduleData[selectedDateStr] || {};
+      const current = dayData[selectedPerson];
+
+      if (current) {
+        document.getElementById('modalTitle').innerText = `${selectedPerson === 'wife' ? '아내' : '남편'} 저녁 일정 수정`;
+        document.getElementById('formTitle').value = current.title || '';
+        document.getElementById('formTime').value = current.time || '';
+        setType(current.type || '집');
+        document.getElementById('btnDeleteSchedule').classList.remove('hidden');
+      } else {
+        document.getElementById('modalTitle').innerText = `${selectedPerson === 'wife' ? '아내' : '남편'} 저녁 일정 등록`;
+        document.getElementById('formTitle').value = '';
+        document.getElementById('formTime').value = '';
+        setType('집');
+        document.getElementById('btnDeleteSchedule').classList.add('hidden');
+      }
+
+      document.getElementById('scheduleModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('scheduleModal').classList.add('hidden');
+    }
+
+    function selectPerson(person) {
+      selectedPerson = person;
+      const btnWife = document.getElementById('btnSelectWife');
+      const btnHusband = document.getElementById('btnSelectHusband');
+
+      if (person === 'wife') {
+        btnWife.className = 'py-2 rounded-xl border-2 border-rose-500 bg-rose-50 text-rose-700 text-xs font-bold flex items-center justify-center gap-1';
+        btnHusband.className = 'py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-semibold flex items-center justify-center gap-1';
+      } else {
+        btnHusband.className = 'py-2 rounded-xl border-2 border-blue-500 bg-blue-50 text-blue-700 text-xs font-bold flex items-center justify-center gap-1';
+        btnWife.className = 'py-2 rounded-xl border border-slate-200 bg-white text-slate-600 text-xs font-semibold flex items-center justify-center gap-1';
+      }
+
+      const dateVal = document.getElementById('formDate').value || selectedDateStr;
+      const dayData = scheduleData[dateVal] || {};
+      const current = dayData[selectedPerson];
+      if (current) {
+        document.getElementById('formTitle').value = current.title || '';
+        document.getElementById('formTime').value = current.time || '';
+        setType(current.type || '집');
+        document.getElementById('btnDeleteSchedule').classList.remove('hidden');
+      } else {
+        document.getElementById('formTitle').value = '';
+        document.getElementById('formTime').value = '';
+        document.getElementById('btnDeleteSchedule').classList.add('hidden');
+      }
+    }
+
+    function setType(typeName) {
+      selectedType = typeName;
+      const buttons = document.querySelectorAll('#typeButtons .type-btn');
+      buttons.forEach(btn => {
+        if (btn.innerText.includes(typeName)) {
+          btn.className = 'type-btn p-2 rounded-xl border border-indigo-500 bg-indigo-50 text-indigo-700 text-xs font-bold text-center';
+        } else {
+          btn.className = 'type-btn p-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 text-center';
+        }
+      });
+
+      const titleInput = document.getElementById('formTitle');
+      if (!titleInput.value) {
+        titleInput.value = typeName;
+      }
+    }
+
+    function setTime(timeVal) {
+      document.getElementById('formTime').value = timeVal;
+    }
+
+    function saveSchedule() {
+      const dateKey = document.getElementById('formDate').value;
+      const title = document.getElementById('formTitle').value.trim() || selectedType;
+      const time = document.getElementById('formTime').value.trim() || '';
+
+      if (!scheduleData[dateKey]) {
+        scheduleData[dateKey] = {};
+      }
+
+      scheduleData[dateKey][selectedPerson] = {
+        type: selectedType,
+        title: title,
+        time: time
+      };
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(scheduleData));
+
+      selectedDateStr = dateKey;
+      renderCalendar();
+      renderSelectedDay();
+      closeModal();
+      showToast('저장되었습니다!');
+    }
+
+    function deleteSchedule() {
+      const dateKey = document.getElementById('formDate').value;
+      if (scheduleData[dateKey] && scheduleData[dateKey][selectedPerson]) {
+        delete scheduleData[dateKey][selectedPerson];
+        if (Object.keys(scheduleData[dateKey]).length === 0) {
+          delete scheduleData[dateKey];
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(scheduleData));
+      }
+
+      renderCalendar();
+      renderSelectedDay();
+      closeModal();
+      showToast('삭제되었습니다.');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.classList.remove('opacity-0');
+      toast.classList.add('opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0');
+      }, 1800);
+    }
+
+    // 초기 실행
+    renderCalendar();
+    renderSelectedDay();
+  </script>
+</body>
+</html>
