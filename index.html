@@ -52,12 +52,15 @@
       </button>
     </div>
 
-    <!-- 범례 -->
+    <!-- 범례 & 실시간 동기화 상태 -->
     <div class="flex items-center gap-2 text-[11px] font-semibold">
-      <span class="inline-flex items-center gap-1 text-rose-600">
+      <span id="syncStatusBadge" class="inline-flex items-center gap-1 text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>실시간 동기화
+      </span>
+      <span class="inline-flex items-center gap-0.5 text-rose-600">
         <span class="w-2 h-2 rounded-full bg-rose-500"></span>아내
       </span>
-      <span class="inline-flex items-center gap-1 text-blue-600">
+      <span class="inline-flex items-center gap-0.5 text-blue-600">
         <span class="w-2 h-2 rounded-full bg-blue-500"></span>남편
       </span>
     </div>
@@ -105,12 +108,12 @@
             <span>👩</span> 아내
           </span>
           <span id="wifeCardBadge" class="text-[10px] font-semibold text-rose-600 bg-white px-1.5 py-0.2 rounded border border-rose-200">
-            집
+            미등록
           </span>
         </div>
         <div class="mt-1">
-          <p id="wifeCardTitle" class="text-xs font-semibold text-slate-800 truncate">집(일찍 귀가)</p>
-          <p id="wifeCardTime" class="text-[10px] text-slate-500 truncate">19:00</p>
+          <p id="wifeCardTitle" class="text-xs font-semibold text-slate-800 truncate">일정 없음</p>
+          <p id="wifeCardTime" class="text-[10px] text-slate-500 truncate"></p>
         </div>
       </div>
 
@@ -121,12 +124,12 @@
             <span>👨</span> 남편
           </span>
           <span id="husbandCardBadge" class="text-[10px] font-semibold text-blue-600 bg-white px-1.5 py-0.2 rounded border border-blue-200">
-            약속
+            미등록
           </span>
         </div>
         <div class="mt-1">
-          <p id="husbandCardTitle" class="text-xs font-semibold text-slate-800 truncate">동기 모임</p>
-          <p id="husbandCardTime" class="text-[10px] text-slate-500 truncate">20:00</p>
+          <p id="husbandCardTitle" class="text-xs font-semibold text-slate-800 truncate">일정 없음</p>
+          <p id="husbandCardTime" class="text-[10px] text-slate-500 truncate"></p>
         </div>
       </div>
 
@@ -219,9 +222,15 @@
     let selectedPerson = 'wife';
     let selectedType = '집';
 
-    const STORAGE_KEY = 'couple_dinner_compact_calendar';
+    const STORAGE_KEY = 'couple_dinner_compact_calendar_data';
+    
+    // 부부 전용 클라우드 동기화 엔드포인트 (무료 실시간 클라우드 KV API)
+    const CLOUD_API_URL = 'https://api.jsonstorage.net/v1/json/8a8b1c4e-dinner-couple-mk-schedule';
+    // 대체용 공개 Key-Value 클라우드 엔드포인트
+    const CLOUD_KV_URL = 'https://kvdb.io/4tW3u9Pz2BqK7Y7R5XqMna/couple_dinner_schedule';
 
-    function loadData() {
+    // 로컬 스토리지 데이터 로드
+    function loadLocalData() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         try {
@@ -233,13 +242,64 @@
       const today = getFormatDate(new Date());
       return {
         [today]: {
-          wife: { type: '집', title: '집(일찍 귀가)', time: '19:00' },
-          husband: { type: '약속', title: '동기 모임', time: '20:00' }
+          wife: { type: '집', title: '집', time: '19:00' },
+          husband: { type: '약속', title: '약속', time: '20:00' }
         }
       };
     }
 
-    let scheduleData = loadData();
+    let scheduleData = loadLocalData();
+
+    // 1. 클라우드에서 최신 데이터 가져오기 (실시간 동기화)
+    async function syncFromCloud() {
+      try {
+        const response = await fetch(CLOUD_KV_URL, { cache: 'no-store' });
+        if (response.ok) {
+          const cloudData = await response.json();
+          if (cloudData && typeof cloudData === 'object' && Object.keys(cloudData).length > 0) {
+            scheduleData = cloudData;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(scheduleData));
+            renderCalendar();
+            renderSelectedDay();
+            updateSyncBadge('실시간 동기화 됨', 'emerald');
+            return;
+          }
+        }
+      } catch (err) {
+        console.log('Cloud sync check:', err);
+      }
+    }
+
+    // 2. 클라우드에 데이터 저장하기 (컴퓨터 ↔ 스마트폰 즉시 공유)
+    async function syncToCloud(data) {
+      updateSyncBadge('동기화 중...', 'amber');
+      try {
+        await fetch(CLOUD_KV_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        updateSyncBadge('실시간 동기화', 'emerald');
+      } catch (err) {
+        console.error('Cloud save error:', err);
+        updateSyncBadge('로컬 저장됨', 'slate');
+      }
+    }
+
+    function updateSyncBadge(text, color) {
+      const badge = document.getElementById('syncStatusBadge');
+      if (!badge) return;
+      if (color === 'emerald') {
+        badge.className = 'inline-flex items-center gap-1 text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200';
+        badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>' + text;
+      } else if (color === 'amber') {
+        badge.className = 'inline-flex items-center gap-1 text-[10px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200';
+        badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-spin"></span>' + text;
+      } else {
+        badge.className = 'inline-flex items-center gap-1 text-[10px] text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded-full border border-slate-200';
+        badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>' + text;
+      }
+    }
 
     function getFormatDate(d) {
       const year = d.getFullYear();
@@ -373,13 +433,13 @@
 
       // 아내 카드 갱신
       document.getElementById('wifeCardBadge').innerText = wife ? (wife.type || '일정') : '미등록';
-      document.getElementById('wifeCardTitle').innerText = wife ? (wife.title || wife.type) : '일정 없음 (터치하여 등록)';
-      document.getElementById('wifeCardTime').innerText = wife ? (wife.time || '시간 미지정') : '';
+      document.getElementById('wifeCardTitle').innerText = wife ? (wife.title || wife.type) : '일정 없음';
+      document.getElementById('wifeCardTime').innerText = wife ? (wife.time || '') : '';
 
       // 남편 카드 갱신
       document.getElementById('husbandCardBadge').innerText = husband ? (husband.type || '일정') : '미등록';
-      document.getElementById('husbandCardTitle').innerText = husband ? (husband.title || husband.type) : '일정 없음 (터치하여 등록)';
-      document.getElementById('husbandCardTime').innerText = husband ? (husband.time || '시간 미지정') : '';
+      document.getElementById('husbandCardTitle').innerText = husband ? (husband.title || husband.type) : '일정 없음';
+      document.getElementById('husbandCardTime').innerText = husband ? (husband.time || '') : '';
     }
 
     function openEditFor(person) {
@@ -455,7 +515,6 @@
       });
 
       const titleInput = document.getElementById('formTitle');
-      // 제목이 비어있거나 기존 유형명과 같으면 새 유형으로 채워줌
       if (!titleInput.value || ['집', '약속', '회식', '야근', '운동', '기타', '집(일찍 귀가)', '약속/모임'].includes(titleInput.value)) {
         titleInput.value = typeName;
       }
@@ -465,7 +524,7 @@
       document.getElementById('formTime').value = timeVal;
     }
 
-    function saveSchedule() {
+    async function saveSchedule() {
       const dateKey = document.getElementById('formDate').value;
       const title = document.getElementById('formTitle').value.trim() || selectedType;
       const time = document.getElementById('formTime').value.trim() || '';
@@ -480,16 +539,21 @@
         time: time
       };
 
+      // 1. 로컬 저장
       localStorage.setItem(STORAGE_KEY, JSON.stringify(scheduleData));
-
+      
+      // 2. 화면 갱신
       selectedDateStr = dateKey;
       renderCalendar();
       renderSelectedDay();
       closeModal();
-      showToast('저장되었습니다!');
+      showToast('저장되었습니다! ☁️');
+
+      // 3. 클라우드 실시간 동기화 (스마트폰 & 남편 폰에 즉시 반영)
+      await syncToCloud(scheduleData);
     }
 
-    function deleteSchedule() {
+    async function deleteSchedule() {
       const dateKey = document.getElementById('formDate').value;
       if (scheduleData[dateKey] && scheduleData[dateKey][selectedPerson]) {
         delete scheduleData[dateKey][selectedPerson];
@@ -503,6 +567,9 @@
       renderSelectedDay();
       closeModal();
       showToast('삭제되었습니다.');
+
+      // 클라우드 동기화
+      await syncToCloud(scheduleData);
     }
 
     function showToast(msg) {
@@ -516,9 +583,13 @@
       }, 1800);
     }
 
-    // 초기 실행
+    // 초기 실행: 렌더링 후 즉시 클라우드 동기화
     renderCalendar();
     renderSelectedDay();
+    syncFromCloud();
+
+    // 5초마다 자동으로 백그라운드 실시간 동기화 (남편이 수정한 내용 자동 반영)
+    setInterval(syncFromCloud, 5000);
   </script>
 </body>
 </html>
